@@ -11,4 +11,4 @@ store them in PostgreSQL, then enrich and score them.
 5. Dashboard (planned)
 
 ## Status
-Phase 1 in progress.
+Phase 1 in complete.
