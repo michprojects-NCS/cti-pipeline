@@ -11,3 +11,14 @@ CREATE TABLE IF NOT EXISTS indicators_raw (
 );
 CREATE INDEX IF NOT EXISTS idx_ind_value  ON indicators_raw (value);
 CREATE INDEX IF NOT EXISTS idx_ind_source ON indicators_raw (source);
+
+CREATE TABLE IF NOT EXISTS feed_runs (
+    id          BIGSERIAL PRIMARY KEY,
+    source      TEXT        NOT NULL,
+    started_at  TIMESTAMPTZ NOT NULL,
+    finished_at TIMESTAMPTZ,
+    status      TEXT        NOT NULL,     -- ok | error
+    fetched     INT,                      -- records the feed returned
+    saved       INT,                      -- records that reached the table
+    error       TEXT
+);
