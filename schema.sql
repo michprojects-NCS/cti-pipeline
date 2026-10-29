@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS indicators_raw (
     source         TEXT        NOT NULL,
     timestamp      TIMESTAMPTZ NOT NULL,
     raw            JSONB,
+    confidence     INT,
     ingested_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
     UNIQUE (indicator_type, value, source)
 );
