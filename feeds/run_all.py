@@ -11,11 +11,14 @@ from datetime import datetime, timezone
 
 import abuseipdb
 import otx
+import abusech
 from common import save, _conn
 
 FEEDS = {
     "abuseipdb": ("AbuseIPDB", abuseipdb.fetch),
     "otx": ("OTX", otx.fetch),
+    "feodo": ("Feodo", abusech.fetch_feodo),
+    "urlhaus": ("URLhaus", abusech.fetch_urlhaus),
 }
 
 
