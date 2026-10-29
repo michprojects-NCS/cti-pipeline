@@ -12,7 +12,7 @@ def now_iso():
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
 
 
-def normalize(indicator_type, value, source, timestamp=None, raw=None):
+def normalize(indicator_type, value, source, timestamp=None, raw=None, confidence=None):
     """Return one indicator in the common format."""
     return {
         "indicator_type": indicator_type,
@@ -20,6 +20,7 @@ def normalize(indicator_type, value, source, timestamp=None, raw=None):
         "source": source,
         "timestamp": timestamp or now_iso(),
         "raw": raw,
+        "confidence": confidence,
     }
 
 
@@ -37,15 +38,15 @@ def save(records):
         print("No records to save.")
         return 0
     rows = [
-        (r["indicator_type"], r["value"], r["source"], r["timestamp"], Json(r.get("raw")))
+        (r["indicator_type"], r["value"], r["source"], r["timestamp"], Json(r.get("raw")), r.get("confidence"))
         for r in unique.values()
     ]
     with _conn() as conn, conn.cursor() as cur:
         execute_values(cur, """
-            INSERT INTO indicators_raw (indicator_type, value, source, timestamp, raw)
+            INSERT INTO indicators_raw (indicator_type, value, source, timestamp, raw, confidence)
             VALUES %s
             ON CONFLICT (indicator_type, value, source)
-            DO UPDATE SET timestamp = EXCLUDED.timestamp, raw = EXCLUDED.raw
+            DO UPDATE SET timestamp = EXCLUDED.timestamp, raw = EXCLUDED.raw, confidence = EXCLUDED.confidence
         """, rows)
     print(f"Saved {len(rows)} records.")
     return len(rows)
