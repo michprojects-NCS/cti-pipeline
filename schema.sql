@@ -22,3 +22,13 @@ CREATE TABLE IF NOT EXISTS feed_runs (
     saved       INT,                      -- records that reached the table
     error       TEXT
 );
+
+CREATE TABLE IF NOT EXISTS enrichment (
+    id             BIGSERIAL PRIMARY KEY,
+    indicator_type TEXT        NOT NULL,
+    value          TEXT        NOT NULL,
+    provider       TEXT        NOT NULL,     -- internetdb, rdap, virustotal, ...
+    data           JSONB       NOT NULL,
+    enriched_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+    UNIQUE (indicator_type, value, provider)
+);
