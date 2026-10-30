@@ -13,4 +13,4 @@ store them in PostgreSQL, then enrich and score them.
 ## Status
 Phase 1 complete.
 
-Phase 2 (feed ingestion) in progress: AbuseIPDB, OTX, Feodo Tracker and URLhaus are ingested and cleaned, with an overlap view and offline tests. See [docs/feeds.md](docs/feeds.md).
+Phase 2 (feed ingestion) complete: AbuseIPDB, OTX, Feodo Tracker and URLhaus are ingested and cleaned on a daily schedule, with an overlap view and offline tests. VirusTotal moves to Phase 3 (enrichment); MISP is not implemented. See [docs/feeds.md](docs/feeds.md).
