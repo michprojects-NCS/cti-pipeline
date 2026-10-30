@@ -60,6 +60,8 @@ Note on counts: AbuseIPDB shows more rows than its per-request limit because the
 
 Overlap result: all 949 indicators were reported by exactly one feed, so the view found 0 cross-feed matches. This is expected at this sample size, because each feed contributes only a few hundred rows and they cover different indicator types. It says nothing about whether the feeds agree. It will become informative as the sample grows.
 
+Feodo detail: the 5 indicators were 1 online QakBot, 3 offline QakBot and 1 offline Emotet, which explains the small count and why 4 of 5 carry confidence 60.
+
 ## Known limitations
 
 - OTX reads only the first page of subscribed pulses, which is 10 pulses.
