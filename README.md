@@ -12,3 +12,5 @@ store them in PostgreSQL, then enrich and score them.
 
 ## Status
 Phase 1 complete.
+
+Phase 2 (feed ingestion) in progress: AbuseIPDB, OTX, Feodo Tracker and URLhaus are ingested and cleaned, with an overlap view and offline tests. See [docs/feeds.md](docs/feeds.md).

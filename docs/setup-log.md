@@ -22,3 +22,17 @@
 - Cause: static netplan config was in a `.yaml.dpkg-backup` file, which netplan ignores
 - Fix: copied it to /etc/netplan/01-static.yaml (mode 600), ran `netplan generate` and `netplan apply`
 - Verified: IP persisted across a second reboot; UFW, PostgreSQL, fail2ban and Docker active
+
+## 2026-10-29: Feed ingestion (Phase 2)
+- Feeds written as functions that return normalized records; `feeds/run_all.py` runs them with failure isolation and logs each run to `feed_runs`
+- Cleaning in `feeds/common.py`: public IPs only, allowlist for known-good IPs and domains, canonical casing per indicator type
+- Added abuse.ch feeds: Feodo Tracker (botnet C2 IPs) and URLhaus (malware URLs), both using an Auth-Key stored only in `.env`
+- Added SQL view `indicator_overlap` (how many feeds reported each indicator); result with 949 indicators: all seen by one feed only
+- Added 25 offline pytest tests (cleaning rules, abuse.ch parsers); all pass
+- Details, limits and confidence mappings: `docs/feeds.md`
+
+## Troubleshooting: URLhaus HTTP 410
+- Symptom: URLhaus feed failed with `HTTP 410 Gone`; Feodo from the same provider worked
+- Cause: the old plain-text download address had been retired
+- Fix: switched to the authenticated URLhaus API (`/v1/urls/recent/`) using the same Auth-Key
+- Verified: `URLhaus: fetched 500, saved 500` and an `ok` row in `feed_runs`
