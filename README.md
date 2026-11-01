@@ -5,8 +5,8 @@ store them in PostgreSQL, then enrich and score them.
 
 ## Phases
 1. Environment setup (Ubuntu VM, Python, PostgreSQL, Docker, Git)
-2. Feed ingestion (AbuseIPDB, VirusTotal, OTX, MISP)
-3. Enrichment (WHOIS/DNS, Shodan InternetDB, VT/OTX reputation)
+2. Feed ingestion (AbuseIPDB, Feodo Tracker, OTX, URLhaus; MISP(not implemented))
+3. Enrichment (WHOIS/DNS, Shodan InternetDB, VirusTotal reputation)
 4. Scoring (planned)
 5. Dashboard (planned)
 
