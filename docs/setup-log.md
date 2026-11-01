@@ -55,3 +55,15 @@
 - Symptom: `enrich:rdap` logged `error` although 85 of 86 IPs were stored
 - Cause: one APNIC RDAP request failed (server error)
 - Result: the failed IP was not stored, so the next run picked it up again and stored it; failed lookups are retried automatically
+
+## 2026-11-01: Scoring v2 (Phase 4)
+- Added `scoring/score_v2.py`: per-source trust, VirusTotal scaling past 10 engines, a known-clean penalty, and active Feodo C2 handling
+- `scoring/run_scoring.py` takes `--model v1|v2`; `scripts/compare_models.py` runs both models on the same data and writes nothing
+- Added 11 tests for v2; 86 tests pass in total
+- Comparison: IP order agrees at 0.99; URLhaus scores about 10% lower, OTX about 20% lower; IPs flagged by 14 to 16 VirusTotal engines now separate from those flagged by 8 to 9
+- Details, weights and limits: `docs/scoring.md`
+
+## Troubleshooting: the daily job would have reverted scores to v1
+- Symptom: `run_scoring.py` printed `model v1` when run without arguments, although the table held v2 scores from a manual run
+- Cause: the default model was v1 and `daily_run.sh` runs the script without arguments
+- Fix: the default is now v2; verified that a plain run scores 1796 indicators with model v2

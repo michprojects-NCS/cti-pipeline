@@ -1,6 +1,6 @@
 """Score every indicator and store the result in indicator_scores.
 
-Usage: python scoring/run_scoring.py [--model v1|v2]      (default: v1)
+Usage: python scoring/run_scoring.py [--model v1|v2]      (default: v2)
 """
 import argparse
 import os
@@ -67,7 +67,7 @@ def load_facts(conn):
 
 def main(argv=None):
     ap = argparse.ArgumentParser()
-    ap.add_argument("--model", choices=list(MODELS), default="v1")
+    ap.add_argument("--model", choices=list(MODELS), default="v2")
     model = MODELS[ap.parse_args(argv).model]
 
     started = datetime.now(timezone.utc)
