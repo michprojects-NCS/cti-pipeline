@@ -44,3 +44,14 @@
 - VirusTotal enrichment for priority indicators, paced for the free 4 per minute and 500 per day limits
 - Added `scripts/status.sh` for a one-screen health check
 - Details, limits and findings: `docs/enrichment.md`
+## 2026-11-01: Enrichment tests, scoring v1 and the daily job
+- Added 32 offline tests for the enrichment lookups (InternetDB, RDAP, DNS, WHOIS, VirusTotal), using fake responses; 75 tests pass in total
+- Added scoring v1: `scoring/score.py` (pure function, weights at the top), `scoring/run_scoring.py` and the `indicator_scores` table; 1796 indicators scored
+- Rewrote `scripts/daily_run.sh` to run feeds, then enrichment, then scoring, with a lock so the @reboot and daily runs cannot overlap
+- Tested the schedule by moving the cron time a few minutes ahead; cron started the job without me
+- Findings: scores range from the 10s up to 75 with many ties; VirusTotal flagged 20 of 20 priority indicators because the highest-confidence indicators are checked first
+
+## Troubleshooting: one RDAP lookup failed
+- Symptom: `enrich:rdap` logged `error` although 85 of 86 IPs were stored
+- Cause: one APNIC RDAP request failed (server error)
+- Result: the failed IP was not stored, so the next run picked it up again and stored it; failed lookups are retried automatically
