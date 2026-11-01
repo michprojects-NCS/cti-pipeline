@@ -24,6 +24,27 @@ Run each script from `/opt/cti` (they take an optional limit):
 
 The free Public API allows 4 requests per minute and 500 per day and is not licensed for commercial use. `vt.py` therefore pauses 16 seconds between calls, stops immediately on a quota error, skips domains that no longer resolve, and ranks candidates by: reported by 2+ feeds, then highest source confidence, then newest sighting.
 
+## Schedule
+
+`scripts/daily_run.sh` runs the whole pipeline once a day: cron at 10:15, and again three minutes after every reboot. Order: feeds, then enrichment, then scoring.
+
+- A lock file stops two runs from overlapping.
+- Feeds are skipped if AbuseIPDB succeeded in the last 20 hours, to protect its daily allowance.
+- Limits per run: InternetDB 200 IPs, RDAP 100 IPs, DNS/WHOIS 30 domains, VirusTotal 20 indicators. Each script skips anything still inside its cache period, so repeat runs are cheap.
+- Scoring runs last, so it reads the freshest enrichment.
+- One failing step is logged and does not stop the next one. Each step also writes a row to `feed_runs`, and the combined output goes to `logs/ingest.log` (not in git).
+- VirusTotal coverage grows slowly by design: 20 new lookups a day against a 30-day cache.
+
+## Safety
+
+- URLs and file hashes are only sent to VirusTotal as lookup keys (a URL is encoded into the API path). The pipeline never opens, downloads or visits an indicator URL or file.
+- Domains get DNS (A, MX, NS) and WHOIS queries only. Those queries can be observed by the owners of the domain's name servers, which this project accepts.
+- API keys live only in `.env`, which Git ignores. `scripts/status.sh` checks that no key appears in the Git history.
+
+## Tests
+
+`tests/test_enrichment.py` covers every lookup function with fake responses (no network, no database): found, not found, errors, parsing, and the quota and key failures. Run `python -m pytest` from `/opt/cti`.## Snapshot: 2026-10-30
+
 ## Snapshot: 2026-10-30
 
 - **InternetDB:** 227 IPs checked, 144 with data, 83 not found. Most common open ports: 22 (85 IPs), 80 (53), 443 (37), 8080 (9), 8443 (9).
