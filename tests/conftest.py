@@ -1,5 +1,8 @@
 import os
 import sys
 
-# Make "import common" and "import abusech" work from the tests folder.
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "feeds"))
+HERE = os.path.dirname(__file__)
+
+# Make "import common", "import score" and "import vt" work from the tests folder.
+for folder in ("feeds", "scoring", "enrichment"):
+    sys.path.insert(0, os.path.join(HERE, "..", folder))
