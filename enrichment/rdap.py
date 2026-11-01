@@ -8,6 +8,7 @@ import time
 from datetime import datetime, timezone
 
 from ipwhois import IPWhois
+from ipwhois.exceptions import HTTPLookupError
 from psycopg2.extras import Json
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "feeds"))
@@ -33,7 +34,12 @@ LIMIT %s
 
 def lookup(ip):
     """Return the ownership fields we keep. Raises on failure (retry next run)."""
-    r = IPWhois(ip).lookup_rdap(inc_nir=False)
+    try:
+        r = IPWhois(ip).lookup_rdap(inc_nir=False)
+    except HTTPLookupError as exc:
+        if "404" in str(exc):          # the registry has no record: a valid answer
+            return {"found": False}
+        raise
     net = r.get("network") or {}
     return {
         "asn": r.get("asn"),

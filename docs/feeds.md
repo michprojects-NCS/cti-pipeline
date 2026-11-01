@@ -82,3 +82,7 @@ Feodo detail: the 5 indicators were 1 online QakBot, 3 offline QakBot and 1 offl
 
 - **VirusTotal:** listed in the Phase 2 plan but has no feed. Its reputation lookups fit Phase 3 (enrichment).
 - **MISP:** needs a MISP instance to pull from.
+
+## Scheduling
+
+`scripts/daily_run.sh` runs all feeds unless AbuseIPDB already succeeded in the last 20 hours, which protects its small daily allowance. cron calls it at 10:15 every day and three minutes after every boot. The boot trigger exists because the VM is not always powered on, and cron does not catch up on jobs missed while the machine was off. The first schedule (06:15 daily) produced no runs while the VM was shut down.

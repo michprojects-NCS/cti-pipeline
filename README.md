@@ -14,3 +14,5 @@ store them in PostgreSQL, then enrich and score them.
 Phase 1 complete.
 
 Phase 2 (feed ingestion) complete: AbuseIPDB, OTX, Feodo Tracker and URLhaus are ingested and cleaned on a daily schedule, with an overlap view and offline tests. VirusTotal moves to Phase 3 (enrichment); MISP is not implemented. See [docs/feeds.md](docs/feeds.md).
+
+Phase 3 (enrichment) in progress: IPs are enriched with InternetDB and RDAP ownership data, domains with DNS and WHOIS age, and priority indicators with VirusTotal reputation. See [docs/enrichment.md](docs/enrichment.md).

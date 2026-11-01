@@ -36,3 +36,11 @@
 - Cause: the old plain-text download address had been retired
 - Fix: switched to the authenticated URLhaus API (`/v1/urls/recent/`) using the same Auth-Key
 - Verified: `URLhaus: fetched 500, saved 500` and an `ok` row in `feed_runs`
+
+## 2026-10-30: Enrichment (Phase 3)
+- Added `enrichment` table keyed by (type, value, provider) with JSONB data and a cache period per provider
+- IPs: Shodan InternetDB (ports, vulns) and RDAP ownership (ASN, organisation, country)
+- Domains: DNS records and WHOIS registration age; 71 of 80 domains no longer resolve
+- VirusTotal enrichment for priority indicators, paced for the free 4 per minute and 500 per day limits
+- Added `scripts/status.sh` for a one-screen health check
+- Details, limits and findings: `docs/enrichment.md`
