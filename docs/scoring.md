@@ -53,7 +53,7 @@ Feed points use the single best source, not a sum: confidence × the source's fa
 
 v2 imports its overlap, new-domain, freshness and inactive-domain rules from `scoring/score.py`. Changing those in v1 would change v2 as well, so the two models are no longer a fair comparison after such a change.## Comparison on 2026-11-01 (min / average / max)
 
-## Comparison on 2026-11-01 (min /average / max)
+## Comparison on 2026-11-01 (min / average / max)
 
 | Type | Indicators | v1 | v2 |
 |---|---|---|---|
