@@ -25,11 +25,35 @@ Multipliers: freshness 1.0 if seen in the last 7 days, 0.8 up to 30 days, 0.5 ol
 v2 was built after reviewing v1 on real data. Exact weights are the constants at the top of `scoring/score_v2.py`. What changed, with the evidence from `scripts/compare_models.py`:
 
 - **Feeds are trusted differently.** Each feed's confidence is handled per source. URLhaus scores came out about 10% lower than in v1 (average 39.6 to 35.6), OTX about 20% lower (23.4 to 18.7), AbuseIPDB barely moved (55.6 to 54.2).
-- **VirusTotal detections keep counting past 10 engines.** In v1, 10 or more engines earned the same 25 points: 36 of 82 checked indicators sat on that ceiling and about 45 IPs tied at 75. In v2 the IPs flagged by 14 to 16 engines stay at 75 (about 5 IPs) and those flagged by 8 to 9 engines drop to 66.
+- **VirusTotal detections keep counting past 10 engines.** In v1, 10 or more engines earned the same 25 points: 36 of 82 checked indicators sat on that ceiling. In v2, IPs flagged by 15 or 16 engines still reach the top score of 75, while the examples flagged by 8 or 9 engines dropped to 66.
 - **A known-clean penalty.** An indicator VirusTotal checked with no detections loses points (35.228.22.253: 50 to 45).
 - **An active Feodo C2 server ranks level with a well-reported AbuseIPDB IP** (50.16.16.211: 45 to 50).
 
-## Comparison on 2026-11-01 (min / average / max)
+## v2 weights (from `scoring/score_v2.py`)
+
+Feed points use the single best source, not a sum: confidence × the source's factor, capped at 50.
+
+| Source | Factor | Typical result |
+|---|---|---|
+| AbuseIPDB | 0.50 | confidence 100 gives 50 |
+| Feodo | 0.55 | online (90) gives 49.5, offline (60) gives 33 |
+| URLhaus | 0.45 | online (80) gives 36, offline (50) gives 22.5 |
+| OTX | 0.40 | fixed 60 gives 24 |
+| any other source | 0.40 | |
+
+| Signal | Value |
+|---|---|
+| VirusTotal | 1.67 points per malicious engine (full 25 at 15 engines), 0.5 per suspicious engine, max 25 |
+| VirusTotal known, no detections | −5 |
+| VirusTotal not checked or never seen | 0 (neutral) |
+| Overlap | +10 per extra feed, max 20 (same as v1) |
+| New domain | +10 under 30 days, +5 under 90 days (same as v1) |
+| Freshness | ×1.0 within 7 days, ×0.8 within 30, ×0.5 older (same as v1) |
+| Domain no longer resolves | ×0.5 (same as v1) |
+
+v2 imports its overlap, new-domain, freshness and inactive-domain rules from `scoring/score.py`. Changing those in v1 would change v2 as well, so the two models are no longer a fair comparison after such a change.## Comparison on 2026-11-01 (min / average / max)
+
+## Comparison on 2026-11-01 (min /average / max)
 
 | Type | Indicators | v1 | v2 |
 |---|---|---|---|
