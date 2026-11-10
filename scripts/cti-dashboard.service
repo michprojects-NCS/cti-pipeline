@@ -1,0 +1,15 @@
+[Unit]
+Description=CTI pipeline dashboard (read-only, localhost only)
+After=network.target postgresql.service
+
+[Service]
+User=threatintelpipe
+WorkingDirectory=/opt/cti
+ExecStart=/opt/cti/venv/bin/streamlit run dashboard/app.py
+Restart=on-failure
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+
+[Install]
+WantedBy=multi-user.target
