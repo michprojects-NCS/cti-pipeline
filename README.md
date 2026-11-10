@@ -29,7 +29,7 @@ Phase 4 (scoring) complete: every indicator gets a 0-100 score with a stored bre
 Phase 5 (dashboard) complete: a read-only Streamlit dashboard shows indicators, score breakdowns, feed overlap and pipeline health. It listens on localhost only and is viewed through an SSH tunnel. See [docs/dashboard.md](docs/dashboard.md).
 
 ## Quick start
-Needs Ubuntu, Python 3, PostgreSQL and free API keys for AbuseIPDB, OTX and VirusTotal. The scripts assume the repo lives at `/opt/cti`.
+Needs Ubuntu, Python 3, PostgreSQL and free API keys for AbuseIPDB, OTX, VirusTotal and abuse.ch (Feodo Tracker and URLhaus). The scripts assume the repo lives at `/opt/cti`.
 
 ```bash
 git clone https://github.com/michprojects-NCS/cti-pipeline.git /opt/cti
