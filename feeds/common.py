@@ -88,7 +88,7 @@ def save(records):
             VALUES %s
             ON CONFLICT (indicator_type, value, source)
             DO UPDATE SET timestamp = EXCLUDED.timestamp, raw = EXCLUDED.raw,
-                          confidence = EXCLUDED.confidence
+                          confidence = EXCLUDED.confidence, last_seen_at = now()
         """, rows)
     print(f"Saved {len(rows)} records ({dropped} dropped by cleaning).")
     return len(rows)
