@@ -132,7 +132,7 @@ def test_top_indicators_limit_is_clamped(monkeypatch, asked, used):
 
     monkeypatch.setattr(queries, "run", fake_run)
     queries.top_indicators(None, asked)
-    assert seen["params"] == (used,)
+    assert seen["params"]["limit"] == used
 
 
 def test_kpis_combines_the_panels(monkeypatch):
@@ -150,3 +150,60 @@ def test_kpis_combines_the_panels(monkeypatch):
     assert k["scored"] == 10
     assert k["vt_checked"] == 4
     assert k["pipeline_status"] == "attention"
+
+
+# ---------- filters ----------
+
+def test_like_escape_neutralises_wildcards():
+    assert queries.like_escape("a%b_c\\d") == "a\\%b\\_c\\\\d"
+
+
+def test_top_indicators_passes_filters_as_parameters(monkeypatch):
+    seen = {}
+
+    def fake_run(conn, sql, params=None):
+        seen["params"] = params
+        return []
+
+    monkeypatch.setattr(queries, "run", fake_run)
+    queries.top_indicators(None, 10, kinds=["IP", "URL"], min_score=50, source="OTX", search=" 1.2_3 ")
+    p = seen["params"]
+    assert p["kinds"] == ["IP", "URL"]
+    assert p["min_score"] == 50
+    assert p["source"] == "OTX"
+    assert p["search"] == "1.2\\_3"
+
+
+def test_top_indicators_defaults_mean_no_filter(monkeypatch):
+    seen = {}
+
+    def fake_run(conn, sql, params=None):
+        seen["params"] = params
+        return []
+
+    monkeypatch.setattr(queries, "run", fake_run)
+    queries.top_indicators(None)
+    p = seen["params"]
+    assert p["kinds"] is None
+    assert p["source"] is None
+    assert p["search"] is None
+    assert p["min_score"] == 0
+
+
+@pytest.mark.parametrize("asked, used", [(-5, 0), (50, 50), (500, 100)])
+def test_min_score_is_clamped(monkeypatch, asked, used):
+    seen = {}
+
+    def fake_run(conn, sql, params=None):
+        seen["params"] = params
+        return []
+
+    monkeypatch.setattr(queries, "run", fake_run)
+    queries.top_indicators(None, 10, min_score=asked)
+    assert seen["params"]["min_score"] == used
+
+
+def test_source_names_lists_the_sources(monkeypatch):
+    monkeypatch.setattr(queries, "run",
+                        lambda conn, sql, params=None: [{"source": "AbuseIPDB"}, {"source": "OTX"}])
+    assert queries.source_names(None) == ["AbuseIPDB", "OTX"]

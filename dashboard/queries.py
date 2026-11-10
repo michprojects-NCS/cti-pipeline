@@ -24,6 +24,8 @@ FROM enrichment
 WHERE provider = 'virustotal' AND data->>'found' = 'true'
 """
 
+# Every filter is optional: NULL means no filter. All values are passed as
+# parameters, never pasted into the text.
 TOP_SQL = """
 SELECT s.indicator_type, s.value, s.score,
        o.sources, o.feed_count,
@@ -37,8 +39,12 @@ LEFT JOIN indicator_overlap o
 LEFT JOIN enrichment v
        ON v.indicator_type = s.indicator_type AND v.value = s.value
       AND v.provider = 'virustotal'
+WHERE (%(kinds)s::text[] IS NULL OR s.indicator_type = ANY(%(kinds)s::text[]))
+  AND s.score >= %(min_score)s
+  AND (%(source)s::text IS NULL OR %(source)s::text = ANY(o.sources))
+  AND (%(search)s::text IS NULL OR s.value ILIKE '%%' || %(search)s::text || '%%')
 ORDER BY s.score DESC, s.value
-LIMIT %s
+LIMIT %(limit)s
 """
 
 DIST_SQL = """
@@ -62,7 +68,13 @@ FROM feed_runs
 ORDER BY source, started_at DESC
 """
 
-ALL_SQL = [KPI_SQL, VT_SQL, TOP_SQL, DIST_SQL, TYPES_SQL, HEALTH_SQL]   # the tests check these are read-only
+SOURCES_SQL = """
+SELECT DISTINCT unnest(sources) AS source
+FROM indicator_overlap
+ORDER BY 1
+"""
+
+ALL_SQL = [KPI_SQL, VT_SQL, TOP_SQL, DIST_SQL, TYPES_SQL, HEALTH_SQL, SOURCES_SQL]   # the tests check these are read-only
 
 
 def get_url():
@@ -104,6 +116,11 @@ def why(per_source, vt_state, vt_malicious, multipliers):
     return " · ".join(parts)
 
 
+def like_escape(text):
+    """Make user text safe inside an ILIKE pattern: %, _ and backslash lose their special meaning."""
+    return text.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+
+
 def fill_buckets(rows):
     """Score buckets 0-9 ... 90-99 and 100, with zeros where nothing scored."""
     counts = {r["bucket"]: r["n"] for r in rows}
@@ -130,12 +147,24 @@ def kpis(conn):
     return k
 
 
-def top_indicators(conn, limit=20):
-    limit = max(1, min(int(limit), 200))
-    rows = run(conn, TOP_SQL, (limit,))
+def top_indicators(conn, limit=20, kinds=None, min_score=0, source=None, search=None):
+    """The highest-scored indicators, optionally filtered by type, feed, minimum score and text."""
+    search = (search or "").strip()[:100]
+    params = {
+        "limit": max(1, min(int(limit), 200)),
+        "kinds": list(kinds) if kinds else None,
+        "min_score": max(0, min(int(min_score), 100)),
+        "source": source or None,
+        "search": like_escape(search) if search else None,
+    }
+    rows = run(conn, TOP_SQL, params)
     for r in rows:
         r["why"] = why(r.pop("per_source"), r.pop("vt_state"), r.pop("vt_malicious"), r.pop("multipliers"))
     return rows
+
+
+def source_names(conn):
+    return [r["source"] for r in run(conn, SOURCES_SQL)]
 
 
 def score_distribution(conn):
