@@ -28,6 +28,7 @@ WHERE provider = 'virustotal' AND data->>'found' = 'true'
 # parameters, never pasted into the text.
 TOP_SQL = """
 SELECT s.indicator_type, s.value, s.score,
+       g.region, g.country_code, g.method,
        o.sources, o.feed_count,
        s.components->'per_source_points' AS per_source,
        s.components->>'virustotal_state' AS vt_state,
@@ -39,8 +40,14 @@ LEFT JOIN indicator_overlap o
 LEFT JOIN enrichment v
        ON v.indicator_type = s.indicator_type AND v.value = s.value
       AND v.provider = 'virustotal'
+LEFT JOIN LATERAL (
+    SELECT region, country_code, method FROM indicator_geo
+    WHERE indicator_type = s.indicator_type AND value = s.value
+    ORDER BY (region = 'east_africa') DESC, method LIMIT 1
+) g ON true
 WHERE (%(kinds)s::text[] IS NULL OR s.indicator_type = ANY(%(kinds)s::text[]))
   AND s.score >= %(min_score)s
+  AND (%(region)s::text IS NULL OR g.region = %(region)s::text)
   AND (%(source)s::text IS NULL OR %(source)s::text = ANY(o.sources))
   AND (%(search)s::text IS NULL OR s.value ILIKE '%%' || %(search)s::text || '%%')
 ORDER BY s.score DESC, s.value
@@ -147,7 +154,7 @@ def kpis(conn):
     return k
 
 
-def top_indicators(conn, limit=20, kinds=None, min_score=0, source=None, search=None):
+def top_indicators(conn, limit=20, kinds=None, min_score=0, source=None, search=None, region=None):
     """The highest-scored indicators, optionally filtered by type, feed, minimum score and text."""
     search = (search or "").strip()[:100]
     params = {
@@ -156,6 +163,7 @@ def top_indicators(conn, limit=20, kinds=None, min_score=0, source=None, search=
         "min_score": max(0, min(int(min_score), 100)),
         "source": source or None,
         "search": like_escape(search) if search else None,
+        "region": region or None,
     }
     rows = run(conn, TOP_SQL, params)
     for r in rows:

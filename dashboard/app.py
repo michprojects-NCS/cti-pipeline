@@ -12,6 +12,19 @@ import queries
 
 st.set_page_config(page_title="CTI pipeline", layout="wide")
 
+REGION_KEYS = {"East Africa": "east_africa", "Other Africa": "other_africa"}
+REGION_NAMES = {"east_africa": "East Africa", "other_africa": "Other Africa"}
+
+st.markdown("""
+<style>
+[data-testid="stMetric"] {background:#f1f6f5; border:1px solid #d3e3e0; border-left:4px solid #0f766e;
+                          border-radius:8px; padding:12px 16px;}
+[data-testid="stMetricValue"] {color:#0f766e;}
+h1 {color:#0b4f4a;}
+h3 {color:#0b4f4a; border-bottom:2px solid #d3e3e0; padding-bottom:4px;}
+</style>
+""", unsafe_allow_html=True)
+
 GUIDE = """
 **Score.** A 0 to 100 ranking of how strongly the evidence points at an indicator, compared with the rest of this data. It is not a probability that the indicator is malicious.
 
@@ -28,6 +41,8 @@ GUIDE = """
 **InternetDB.** Open ports and vulnerability findings are exposure hints and do not change the score.
 
 **Filters** are in the sidebar. Leave the type box empty to see every type.
+
+**Region.** Where the indicator's address is registered (from RIR data), not where it is hosted. Blank means no match or not testable, so it does not mean outside the region.
 """
 
 
@@ -60,13 +75,15 @@ try:
     st.sidebar.header("Filters")
     kinds = st.sidebar.multiselect("Indicator type (empty means all)", [t["indicator_type"] for t in types])
     source = st.sidebar.selectbox("Reported by", ["All"] + sources)
+    region = st.sidebar.selectbox("Region", ["All", "East Africa", "Other Africa"])
     min_score = st.sidebar.slider("Minimum score", min_value=0, max_value=100, value=0, step=5)
     search = st.sidebar.text_input("Search indicator text")
     limit = st.sidebar.slider("How many to show", min_value=10, max_value=100, value=20, step=10)
-    st.sidebar.caption("Read-only view. The dashboard login can only SELECT from five tables.")
+    st.sidebar.caption("Read-only view. The dashboard login can only SELECT from six tables.")
 
     top = queries.top_indicators(conn, limit, kinds or None, min_score,
-                                 None if source == "All" else source, search)
+                                 None if source == "All" else source, search,
+                                 region=REGION_KEYS.get(region))
 except psycopg2.Error as exc:
     database_error(exc)
 finally:
@@ -98,11 +115,18 @@ with left:
         st.info("No indicators match these filters.")
     else:
         shown = pd.DataFrame(top)
+        for col in ("region", "country_code"):
+            if col not in shown:
+                shown[col] = None
         shown["sources"] = shown["sources"].apply(lambda s: ", ".join(s) if s else "")
-        shown = shown[["score", "indicator_type", "value", "why", "sources"]]
-        shown.columns = ["Score", "Type", "Indicator", "Why", "Reported by"]
+        shown["region"] = [f"{REGION_NAMES.get(r, r)} ({c})" if isinstance(r, str) else ""
+                   for r, c in zip(shown["region"], shown["country_code"])]
+        shown = shown[["score", "indicator_type", "value", "region", "why", "sources"]]
+        shown.columns = ["Score", "Type", "Indicator", "Region", "Why", "Reported by"]
         st.caption(f"Showing {len(shown)} indicators")
-        st.dataframe(shown, hide_index=True)
+        st.dataframe(shown, hide_index=True, column_config={"Score": st.column_config.ProgressColumn(
+            "Score", min_value=0, max_value=100, format="%d"),
+            "Region": st.column_config.TextColumn("Region", width="medium")})
 
 with right:
     st.subheader("Score distribution")

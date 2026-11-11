@@ -28,7 +28,7 @@ Then open http://localhost:8501 in a browser. It has no login of its own, so kee
 | Pipeline health | Newest run per source, failed ones first, with items fetched and saved. |
 | InternetDB | Open ports and vulnerability findings for IPs. Exposure hints only; they do not change the score. |
 
-Filters are in the sidebar: indicator type, feed, minimum score and a text search over indicator values. Leaving the type box empty shows every type.
+Filters are in the sidebar: indicator type, feed, minimum score, region and a text search over indicator values. Region shows where an address is registered (see [regional.md](regional.md)); blank means no match or not testable. Leaving the type box empty shows every type.
 
 **The score is a ranking, not a probability.** It orders indicators by how strongly the evidence points at them relative to the rest of this data. See [scoring.md](scoring.md) for the exact weights.
 

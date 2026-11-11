@@ -86,7 +86,7 @@ def test_page_has_all_the_filters(monkeypatch):
     at = AppTest.from_file(APP).run(timeout=30)
     assert not at.exception
     assert len(at.multiselect) == 1
-    assert len(at.selectbox) == 1
+    assert len(at.selectbox) == 2          # Reported by, Region
     assert len(at.slider) == 2
     assert len(at.text_input) == 1
 
@@ -102,7 +102,7 @@ def test_filters_reach_the_query(monkeypatch):
     use_fake_data(monkeypatch)
     seen = {}
 
-    def fake_top(conn, limit=20, kinds=None, min_score=0, source=None, search=None):
+    def fake_top(conn, limit=20, kinds=None, min_score=0, source=None, search=None, region=None):
         seen.update(limit=limit, kinds=kinds, min_score=min_score, source=source, search=search)
         return TOP
 
