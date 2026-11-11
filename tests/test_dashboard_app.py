@@ -103,15 +103,16 @@ def test_filters_reach_the_query(monkeypatch):
     seen = {}
 
     def fake_top(conn, limit=20, kinds=None, min_score=0, source=None, search=None, region=None):
-        seen.update(limit=limit, kinds=kinds, min_score=min_score, source=source, search=search)
+        seen.update(limit=limit, kinds=kinds, min_score=min_score, source=source, search=search, region=region)
         return TOP
 
     monkeypatch.setattr(queries, "top_indicators", fake_top)
     at = AppTest.from_file(APP).run(timeout=30)
     at.multiselect[0].select("IP")
     at.selectbox[0].select("OTX")
+    at.selectbox[1].select("East Africa")
     at.slider[0].set_value(50)
     at.text_input[0].input("203.0")
     at.run(timeout=30)
     assert not at.exception
-    assert seen == {"limit": 20, "kinds": ["IP"], "min_score": 50, "source": "OTX", "search": "203.0"}
+    assert seen == {"limit": 20, "kinds": ["IP"], "min_score": 50, "source": "OTX", "search": "203.0", "region": "east_africa"}
