@@ -1,0 +1,8 @@
+{
+  "name": "East Africa",
+  "key": "east_africa",
+  "countries": {
+    "UG": "Uganda", "KE": "Kenya", "TZ": "Tanzania", "RW": "Rwanda", "ET": "Ethiopia",
+    "BI": "Burundi", "SS": "South Sudan", "SO": "Somalia", "DJ": "Djibouti", "ER": "Eritrea"
+  }
+}
