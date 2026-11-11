@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Daily pipeline: feeds -> enrichment -> scoring.
+# Daily pipeline: feeds -> enrichment -> regional tagging -> scoring.
 # Safe to call from both the @reboot and the daily cron entries:
 #  - a lock stops two runs from overlapping
 #  - feeds are skipped if AbuseIPDB already succeeded in the last 20 hours
@@ -25,6 +25,12 @@ $PY /opt/cti/enrichment/internetdb.py 200 || echo "$(date -Is) internetdb step f
 $PY /opt/cti/enrichment/rdap.py 100       || echo "$(date -Is) rdap step failed"
 $PY /opt/cti/enrichment/domains.py 30     || echo "$(date -Is) domains step failed"
 $PY /opt/cti/enrichment/vt.py 20          || echo "$(date -Is) virustotal step failed"
+
+echo "$(date -Is) running regional tagging"
+if ! find /opt/cti/data/rir -name 'delegated-afrinic-extended-latest' -mmin -1200 2>/dev/null | grep -q .; then
+  $PY -m geo.fetch_rir                  || echo "$(date -Is) RIR download failed, using the previous copy"
+fi
+$PY -m geo.tag                          || echo "$(date -Is) regional tagging failed"
 
 echo "$(date -Is) running scoring"
 $PY /opt/cti/scoring/run_scoring.py       || echo "$(date -Is) scoring failed"
