@@ -43,7 +43,6 @@ psql "$DATABASE_URL" -f schema.sql
 psql "$DATABASE_URL" -f sql/overlap_view.sql
 psql "$DATABASE_URL" -f sql/scores_table.sql
 psql "$DATABASE_URL" -f sql/last_seen.sql
-psql "$DATABASE_URL" -f sql/last_seen.sql
 psql "$DATABASE_URL" -f sql/dashboard_role.sql   # set the dashboard password first
 
 bash scripts/daily_run.sh        # ingest, enrich, score
